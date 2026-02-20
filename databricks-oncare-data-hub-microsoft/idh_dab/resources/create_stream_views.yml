@@ -1,0 +1,51 @@
+resources:
+  jobs:
+    create_stream_views:
+      name: create_stream_views
+      tasks:
+        - task_key: create_bronze_view
+          notebook_task:
+            notebook_path: ../src/dlt_helpers/create_stream_views.ipynb
+            base_parameters:
+              env: ${var.env}
+              Data_Catalog: ${var.Data_Catalog}
+              Table_Schema: ${var.Bronze_Schema}
+              Table_Layer: bronze
+            source: WORKSPACE
+          job_cluster_key: create_view_job_culster
+
+        - task_key: create_silver_view
+          depends_on:
+            - task_key: create_bronze_view        
+          notebook_task:
+            notebook_path: ../src/dlt_helpers/create_stream_views.ipynb
+            base_parameters:
+              env: ${var.env}
+              Data_Catalog: ${var.Data_Catalog}
+              Table_Schema: ${var.Silver_Schema}
+              Table_Layer: silver
+            source: WORKSPACE
+          job_cluster_key: create_view_job_culster 
+      job_clusters:
+        - job_cluster_key: create_view_job_culster
+          new_cluster:
+            cluster_name: ""
+            spark_version: 14.3.x-scala2.12
+            azure_attributes:
+              first_on_demand: 1
+              availability: ON_DEMAND_AZURE
+              spot_bid_max_price: -1
+            node_type_id: Standard_D4s_v5
+            enable_elastic_disk: true
+            data_security_mode: USER_ISOLATION
+            runtime_engine: STANDARD
+            num_workers: 1
+      queue:
+        enabled: false
+      parameters:
+        - name: env
+          default: ""
+        - name: Metadata_Catalog
+          default: oncare_integrated_data_hub_ist
+        - name: Metadata_Schema
+          default: audit_idh_cpin

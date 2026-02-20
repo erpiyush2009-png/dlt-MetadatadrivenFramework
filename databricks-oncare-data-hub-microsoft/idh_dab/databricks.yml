@@ -1,0 +1,283 @@
+# This is a Databricks asset bundle definition for idh_dab.
+# See https://docs.databricks.com/dev-tools/bundles/index.html for documentation.
+bundle:
+  name: idh_dab_microsoft
+
+include:
+  - resources/*.yml
+
+variables:
+
+  # The following variables are used to parameterize the bundle.
+  # They can be set in the environment or overridden in the bundle configuration.
+  # See https://docs.databricks.com/dev-tools/bundles/variables.html for more information.
+
+  Source_System:
+    default: idh_cpin
+    description: The source system for the data.  
+  env:
+    default: ist
+    description: The environment variable for pipeline execution.
+
+  Metadata_Catalog:
+      default: oncare_integrated_data_hub_ist
+      description: The catalog for the metadata table.
+  
+  Metadata_Schema:
+      default: audit_idh
+      description: The schema for the metadata table.
+
+  Data_Catalog:
+      default: oncare_integrated_data_hub_ist
+      description: The catalog for the target table.
+
+  Raw_Schema:
+      default: raw_cpin
+      description: The schema for the raw target table.
+
+  Bronze_Schema:
+      default: bronze_cpin
+      description: The schema for the bronze target table.
+
+  Silver_Schema:
+      default: silver_idh
+      description: The schema for the silver target table.
+
+  Fhir_Schema:
+      default: fhir_idh
+      description: The schema for the fhir target table.      
+
+  Integration_logs_table:
+      default: None
+      description: The table for integration logs.
+
+  checkpoint_volume:
+      default: None
+
+  event_log_catalog:
+      default: None
+      description: The catalog for the event log table.
+    
+  event_log_schema:
+      default: None   
+      description: The schema for the event log table.
+
+  subscription:
+    default: 6a48e1cc-14da-48c8-a12d-738cda33f9fe
+
+  tenant:
+    default: cddc1229-ac2a-4b97-b78a-0e5cacb5865c
+
+  resource_group: 
+    default: azr-ist-mx-0604-wrk-cc-rgp-cwridh-0000-ist
+
+  queue_name:
+    default: ist0604cwridh0000datq0001
+
+  Dataflow_Group: 
+    default: IDH
+
+  Silver_Dataflow_Group:
+    default: IDH_Silver
+
+  Fhir_Dataflow_Group:
+    default: IDH_FHIR
+
+  Raw_Path:
+    default: /raw_cpin/cpin-raw-vol/
+
+  Schema_Path:
+    default: /bronze_cpin/Schema/
+
+  Raw_Checkpoint_Path:
+    default: /bronze_cpin/Checkpoint/
+
+  shared_cluster_policy_id: 
+    default: none
+
+
+targets:
+
+  dev:
+    # The default target uses 'mode: development' to create a development copy.
+    # - Deployed resources get prefixed with '[dev my_user_name]'
+    # - Any job schedules and triggers are paused by default.
+    # See also https://docs.databricks.com/dev-tools/bundles/deployment-modes.html.
+    mode: development
+    default: true
+    workspace:
+      host: https://adb-3870075580885869.9.azuredatabricks.net
+      root_path: /Workspace/Users/${workspace.current_user.userName}/.bundle/${bundle.name}/${bundle.target}
+    
+    presets:
+          source_linked_deployment: false
+
+    variables:
+      Source_System: idh_cpin_${workspace.current_user.short_name}
+      env: ist
+      Metadata_Catalog: oncare_integrated_data_hub_ist
+      Metadata_Schema: audit_idh
+      Data_Catalog: oncare_integrated_data_hub_ist
+      Raw_Schema: raw_cpin_${workspace.current_user.short_name}
+      Bronze_Schema: bronze_cpin_${workspace.current_user.short_name}
+      Silver_Schema: silver_idh_${workspace.current_user.short_name}
+      Fhir_Schema: fhir_idh_${workspace.current_user.short_name}
+      Integration_logs_table: data_integration_logs
+      checkpoint_volume: watermark_checkpoint
+      event_log_catalog: oncare_integrated_data_hub_ist
+      event_log_schema: event_log_idh_${workspace.current_user.short_name}
+      subscription: 6a48e1cc-14da-48c8-a12d-738cda33f9fe
+      resource_group: azr-ist-mx-0604-wrk-cc-rgp-cwridh-0000-ist
+      queue_name: ist0604cwridh0000datq0001
+      Dataflow_Group: IDH_${workspace.current_user.short_name}
+      Silver_Dataflow_Group: IDH_Silver_${workspace.current_user.short_name}
+      Fhir_Dataflow_Group: IDH_FHIR_${workspace.current_user.short_name}      
+      Raw_Path: /raw_cpin/cpin-raw-vol/CPIN_A_POC/
+      Raw_Checkpoint_Path: /bronze_cpin_${workspace.current_user.short_name}/Checkpoint/      
+      Schema_Path: /bronze_cpin_${workspace.current_user.short_name}/Schema/
+      shared_cluster_policy_id: 0012DBD9FF4C6A21
+
+  dev-qa:
+    # The default target uses 'mode: development' to create a development copy.
+    # - Deployed resources get prefixed with '[dev my_user_name]'
+    # - Any job schedules and triggers are paused by default.
+    # See also https://docs.databricks.com/dev-tools/bundles/deployment-modes.html.
+    mode: production
+    default: false
+    workspace:
+      host: https://adb-3870075580885869.9.azuredatabricks.net
+      root_path: /Workspace/main/${bundle.name}/${bundle.target}
+
+    variables:
+      Source_System: idh_cpin
+      env: ist
+      Metadata_Catalog: oncare_integrated_data_hub_ist
+      Metadata_Schema: audit_idh
+      Data_Catalog: oncare_integrated_data_hub_ist
+      Raw_Schema: raw_cpin
+      Bronze_Schema: bronze_cpin
+      Silver_Schema: silver_idh
+      Fhir_Schema: fhir_idh
+      Integration_logs_table: data_integration_logs
+      checkpoint_volume: watermark_checkpoint
+      event_log_catalog: oncare_integrated_data_hub_ist
+      event_log_schema: event_log_idh
+      subscription: 6a48e1cc-14da-48c8-a12d-738cda33f9fe
+      resource_group: azr-ist-mx-0604-wrk-cc-rgp-cwridh-0000-ist
+      queue_name: ist0604cwridh0000datq0001
+      Dataflow_Group: IDH
+      Silver_Dataflow_Group: IDH_Silver
+      Fhir_Dataflow_Group: IDH_FHIR
+      Raw_Path: /raw_cpin/cpin-raw-vol/
+      Raw_Checkpoint_Path: /bronze_cpin/Checkpoint/      
+      Schema_Path: /bronze_cpin/Schema/
+
+
+    resources:
+      clusters:
+        shared_cluster:
+          cluster_name: "Shared Cluster IDH"
+          policy_id : 0012DBD9FF4C6A21
+          spark_version: 16.4.x-scala2.12
+          node_type_id: Standard_D4s_v5
+          autotermination_minutes: 30
+          enable_elastic_disk: true
+          data_security_mode: USER_ISOLATION
+          runtime_engine: STANDARD
+          # Use autoscale to let Databricks manage the number of workers.
+          # Uncomment the section below to use autoscaling instead of a fixed number of workers.
+          autoscale:
+            min_workers: 1
+            max_workers: 2
+
+          custom_tags:
+            "cost_center": "data-engineering"
+            "purpose": "run test"
+            "project": "IDH DAB"
+            "environment": "dev"
+            "cluster_usage": "Shared cluster for local debugging and other workloads"
+
+          permissions:
+            - group_name: "MSFactoryMigration"
+              level: "CAN_RESTART"                    
+            - group_name: "MPBSD_IDH_QA_Grp"
+              level: "CAN_RESTART"
+            - group_name: "MPBSD_IDH_Developer_Grp"
+              level: "CAN_RESTART"
+            - group_name: "MPBSD_IDH_Reader_Grp"
+              level: "CAN_RESTART"         
+
+
+  qa:
+    # The default target uses 'mode: development' to create a development copy.
+    # - Deployed resources get prefixed with '[dev my_user_name]'
+    # - Any job schedules and triggers are paused by default.
+    # See also https://docs.databricks.com/dev-tools/bundles/deployment-modes.html.
+    mode: production
+    workspace:
+      host: https://adb-3029830694301304.4.azuredatabricks.net/
+      root_path: /Workspace/main/${bundle.name}
+
+    variables:
+      Source_System: idh_cpin
+      env: qa
+      Metadata_Catalog: oncare_integrated_data_hub_qa
+      Metadata_Schema: audit_idh
+      Data_Catalog: oncare_integrated_data_hub_qa
+      Raw_Schema: raw_cpin
+      Bronze_Schema: bronze_cpin
+      Silver_Schema: silver_idh
+      Integration_logs_table: data_integration_logs
+      checkpoint_volume: watermark_checkpoint
+      event_log_catalog: oncare_integrated_data_hub_qa
+      event_log_schema: event_log_idh
+      subscription: 6a48e1cc-14da-48c8-a12d-738cda33f9fe
+      resource_group: azr-ist-mx-0604-wrk-cc-rgp-cwridh-0000-ist
+      queue_name: ist0604cwridh0000datq0001
+      Dataflow_Group: IDH
+      Silver_Dataflow_Group: IDH_Silver      
+      Raw_Path: /raw_cpin/cpin-raw-vol/
+      Raw_Checkpoint_Path: /bronze_cpin/Checkpoint/      
+      Schema_Path: /bronze_cpin/Schema/
+
+    resources:
+      clusters:
+        shared_cluster:
+          cluster_name: "Shared Cluster IDH"
+          policy_id : 000A433B4D12528C
+          spark_version: 16.4.x-scala2.12
+          node_type_id: Standard_D4s_v5
+          autotermination_minutes: 30
+          enable_elastic_disk: true
+          data_security_mode: USER_ISOLATION
+          runtime_engine: STANDARD
+          # Use autoscale to let Databricks manage the number of workers.
+          # Uncomment the section below to use autoscaling instead of a fixed number of workers.
+          autoscale:
+            min_workers: 1
+            max_workers: 2
+
+          custom_tags:
+            "cost_center": "data-engineering"
+            "purpose": "run test"
+            "project": "IDH DAB"
+            "environment": "qa"
+            "cluster_usage": "Shared cluster for local debugging and other workloads"
+
+          permissions:               
+            - group_name: "MPBSD_IDH_QA_Grp"
+              level: "CAN_RESTART"
+            - group_name: "MPBSD_IDH_Developer_Grp"
+              level: "CAN_RESTART"
+            - group_name: "MPBSD_IDH_Reader_Grp"
+              level: "CAN_RESTART"        
+
+  prod:
+    mode: production
+    workspace:
+      host: https://adb-3870075580885869.9.azuredatabricks.net
+      # We explicitly deploy to /Workspace/Users/johnny.lu2@ontario.ca to make sure we only have a single copy.
+      root_path: /Workspace/Users/johnny.lu2@ontario.ca/.bundle/${bundle.name}/${bundle.target}
+    permissions:
+      - user_name: johnny.lu2@ontario.ca
+        level: CAN_MANAGE

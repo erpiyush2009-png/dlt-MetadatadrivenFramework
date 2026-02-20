@@ -1,0 +1,92 @@
+resources:
+  jobs:
+    populate_metadata_job:
+      name: populate_metadata_job
+      tasks:
+        - task_key: create_md_schema_tables
+          notebook_task:
+            notebook_path: ../src/dlt_helpers/create_md_tables.ipynb
+            base_parameters:
+              env: ${var.env}
+              Metadata_Catalog: ${var.Metadata_Catalog}
+              Metadata_Schema: ${var.Metadata_Schema}
+            source: WORKSPACE
+          job_cluster_key: populate_metadata_job_culster
+        - task_key: populate_bronze
+          depends_on:
+            - task_key: create_md_schema_tables
+          notebook_task:
+            notebook_path: ../src/populate_bronze_job.ipynb
+            base_parameters:
+              Source_System: ${var.Source_System}
+              env: ${var.env}
+              Metadata_Catalog: ${var.Metadata_Catalog}
+              Metadata_Schema: ${var.Metadata_Schema}
+              Target_Catalog: ${var.Data_Catalog}
+              Source_Schema: ${var.Raw_Schema}
+              Target_Schema: ${var.Bronze_Schema}
+              subscription: ${var.subscription}
+              tenant: ${var.tenant}
+              resource_group: ${var.resource_group}
+              queue_name: ${var.queue_name}
+              Dataflow_Group: ${var.Dataflow_Group}
+              Raw_Path: ${var.Raw_Path}
+              Schema_Path: ${var.Schema_Path}
+              Raw_Checkpoint_Path: ${var.Raw_Checkpoint_Path}
+            source: WORKSPACE
+          job_cluster_key: populate_metadata_job_culster
+        - task_key: populate_silver
+          depends_on:
+            - task_key: create_md_schema_tables
+          notebook_task:
+            notebook_path: ../src/populate_silver_job.ipynb
+            base_parameters:
+              Source_System: ${var.Source_System}
+              env: ${var.env}
+              Metadata_Catalog: ${var.Metadata_Catalog}
+              Metadata_Schema: ${var.Metadata_Schema}
+              Target_Catalog: ${var.Data_Catalog}
+              Target_Schema: ${var.Silver_Schema}
+              Source_Schema: ${var.Bronze_Schema}
+              Dataflow_Group: ${var.Silver_Dataflow_Group}
+            source: WORKSPACE
+          job_cluster_key: populate_metadata_job_culster
+        - task_key: populate_fhir
+          depends_on:
+            - task_key: create_md_schema_tables
+          notebook_task:
+            notebook_path: ../src/populate_fhir_job.ipynb
+            base_parameters:
+              Source_System: ${var.Source_System} 
+              env: ${var.env}
+              Metadata_Catalog: ${var.Metadata_Catalog}
+              Metadata_Schema: ${var.Metadata_Schema}
+              Target_Catalog: ${var.Data_Catalog}
+              Target_Schema: ${var.Fhir_Schema}
+              Source_Schema: ${var.Silver_Schema}
+              Dataflow_Group: ${var.Fhir_Dataflow_Group}
+            source: WORKSPACE
+          job_cluster_key: populate_metadata_job_culster          
+      job_clusters:
+        - job_cluster_key: populate_metadata_job_culster
+          new_cluster:
+            cluster_name: ""
+            spark_version: 14.3.x-scala2.12
+            azure_attributes:
+              first_on_demand: 1
+              availability: ON_DEMAND_AZURE
+              spot_bid_max_price: -1
+            node_type_id: Standard_D4s_v5
+            enable_elastic_disk: true
+            data_security_mode: USER_ISOLATION
+            runtime_engine: STANDARD
+            num_workers: 1
+      queue:
+        enabled: true
+      parameters:
+        - name: env
+          default: ${var.env}
+        - name: Metadata_Catalog
+          default: ${var.Metadata_Catalog}
+        - name: Metadata_Schema
+          default: ${var.Metadata_Schema}

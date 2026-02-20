@@ -1,0 +1,65 @@
+resources:
+  jobs:
+    run_dlt_pipelines:
+      name: run_dlt_pipelines
+      tasks:
+        - task_key: bronze_pipeline
+          pipeline_task:
+            pipeline_id: ${resources.pipelines.dlt_meta_bronze.id}
+            full_refresh: false
+        - task_key: set_high_watermark
+          depends_on:
+            - task_key: bronze_pipeline
+          notebook_task:
+            notebook_path: ../src/set_high_watermark.ipynb
+            base_parameters:
+              env: ${var.env}
+              Metadata_Catalog: ${var.Metadata_Catalog}
+              Metadata_Schema: ${var.Metadata_Schema}
+              Target_Catalog: ${var.Data_Catalog}
+              Target_Schema: ${var.Bronze_Schema}
+              Integration_logs_table: data_integration_logs
+              checkpoint_volume: watermark_checkpoint
+              dataFlowGroup: ${var.Dataflow_Group}
+            source: WORKSPACE
+          job_cluster_key: set_high_watermark_job_culster
+        - task_key: silver_pipeline
+          depends_on:
+            - task_key: bronze_pipeline
+          pipeline_task:
+            pipeline_id:  ${resources.pipelines.dlt_meta_silver.id} 
+            full_refresh: false
+        - task_key: fhir_pipeline
+          depends_on:
+            - task_key: silver_pipeline
+          pipeline_task:
+            pipeline_id:  ${resources.pipelines.dlt_meta_fhir.id} 
+            full_refresh: false            
+      job_clusters:
+        - job_cluster_key: set_high_watermark_job_culster
+          new_cluster:
+            cluster_name: ""
+            spark_version: 14.3.x-scala2.12
+            azure_attributes:
+              first_on_demand: 1
+              availability: ON_DEMAND_AZURE
+              spot_bid_max_price: -1
+            node_type_id: Standard_D4s_v5
+            enable_elastic_disk: true
+            data_security_mode: USER_ISOLATION
+            runtime_engine: STANDARD
+            num_workers: 1
+      queue:
+        enabled: false
+      parameters:
+        - name: env
+          default: ${var.env}
+        - name: Metadata_Catalog
+          default: ${var.Metadata_Catalog}
+        - name: Metadata_Schema
+          default: ${var.Metadata_Schema}
+      permissions:
+        - group_name: "MPBSD_IDH_QA_Grp"
+          level: "CAN_MANAGE_RUN"
+        - group_name: "MPBSD_IDH_Developer_Grp"
+          level: "CAN_MANAGE_RUN"

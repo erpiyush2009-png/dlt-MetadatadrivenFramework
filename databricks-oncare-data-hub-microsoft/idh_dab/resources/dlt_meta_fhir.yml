@@ -1,0 +1,47 @@
+resources:
+  pipelines:
+    dlt_meta_fhir:
+      name: dlt_meta_fhir
+      ## If NOT using SERVERLESS, uncomment the following lines
+      # clusters:
+      #   - label: default
+      #     num_workers: 1
+      #     node_type_id: Standard_D4s_v5
+      configuration:
+        "source_system": ${var.Source_System}
+        "fhir.dataflowspecTable": "${var.Metadata_Catalog}.${var.Metadata_Schema}.fhir_dataflowspec_table"
+        "layer": "fhir"
+        "fhir.group": ${var.Fhir_Dataflow_Group}
+        "spark.databricks.acl.needAdminPermissionToViewLogs": "false"
+      libraries:
+        - notebook:
+            path: ../src/dlt_load_fhir.ipynb
+      channel: CURRENT
+
+      catalog: ${var.Data_Catalog}
+      schema: ${var.Fhir_Schema}
+      serverless: false
+
+      event_log:
+        name: dlt_meta_fhir_event_log
+        catalog: ${var.event_log_catalog}
+        schema: ${var.event_log_schema}     
+
+      clusters:
+        - label: default
+          # The default cluster configuration for this pipeline
+          node_type_id: Standard_D8ads_v5   
+          autoscale:
+            min_workers: 1
+            max_workers: 2
+            mode: ENHANCED
+          custom_tags:
+            # The default tags to be applied to all clusters in this pipeline
+            cluster_usage: factory migration team DLT
+        - label: maintenance
+          # The maintenance cluster configuration for this pipeline
+          node_type_id: Standard_D8ads_v5
+          autoscale:
+            min_workers: 1
+            max_workers: 1
+            mode: LEGACY      
