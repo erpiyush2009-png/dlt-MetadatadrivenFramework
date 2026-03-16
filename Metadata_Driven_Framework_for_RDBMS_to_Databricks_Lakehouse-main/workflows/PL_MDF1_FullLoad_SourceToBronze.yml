@@ -1,0 +1,12 @@
+resources:
+  jobs:
+    PL_MDF1_FullLoad_SourceToBronze:
+      name: PL_MDF1_FullLoad_SourceToBronze
+      tasks:
+        - task_key: full_load
+          notebook_task:
+            notebook_path: /Workspace/MDFs/RDBMS to Lakehouse/full_load_deltatable
+            source: WORKSPACE
+          existing_cluster_id: <>
+      queue:
+        enabled: true

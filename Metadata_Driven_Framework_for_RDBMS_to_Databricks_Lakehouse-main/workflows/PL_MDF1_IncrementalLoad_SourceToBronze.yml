@@ -1,0 +1,12 @@
+resources:
+  jobs:
+    PL_MDF1_IncrementalLoad_SourceToBronze:
+      name: PL_MDF1_IncrementalLoad_SourceToBronze
+      tasks:
+        - task_key: incremental_load
+          notebook_task:
+            notebook_path: /Workspace/MDFs/RDBMS to Lakehouse/incremental_load_deltatable
+            source: WORKSPACE
+          existing_cluster_id: <>
+      queue:
+        enabled: true

@@ -1,0 +1,37 @@
+resources:
+  jobs:
+    PL_MDF1_UpsertMetadataTables:
+      name: PL_MDF1_UpsertMetadataTables
+      tasks:
+        - task_key: upsert_metadata_tables
+          notebook_task:
+            notebook_path: /Workspace/MDFs/RDBMS to Lakehouse/upsert_metadatatables
+            source: WORKSPACE
+          existing_cluster_id: <>
+      queue:
+        enabled: true
+      parameters:
+        - name: srcDatabaseName
+          default: mdf_sql_db_1
+        - name: srcSchemaName
+          default: SalesLT
+        - name: srcTableName
+          default: Customer
+        - name: destCatalogName
+          default: mdf1
+        - name: destSchemaName
+          default: bronze
+        - name: destTableName
+          default: Customer
+        - name: metaCatalogName
+          default: mdf1
+        - name: metaSchemaName
+          default: bronze
+        - name: incLoadFlag
+          default: "1"
+        - name: reRunFlag
+          default: "0"
+        - name: runDays
+          default: "0"
+        - name: watermarkColumn
+          default: Timestamp

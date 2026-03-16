@@ -1,0 +1,18 @@
+resources:
+  jobs:
+    PL_MDF1_Setup:
+      name: PL_MDF1_Setup
+      tasks:
+        - task_key: create_metadata_tables
+          notebook_task:
+            notebook_path: /Workspace/MDFs/RDBMS to
+              Lakehouse/create_catalog_schema_metadatatables
+            source: WORKSPACE
+          existing_cluster_id: <>
+      queue:
+        enabled: true
+      parameters:
+        - name: metaCatalogName
+          default: mdf1
+        - name: metaSchemaName
+          default: bronze
